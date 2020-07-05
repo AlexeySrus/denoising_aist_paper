@@ -3,7 +3,8 @@
 % Version 2.20 of 2017/10/04
 %
 \documentclass[runningheads]{llncs}
-%
+\usepackage[russian]{babel}%
+
 \usepackage{graphicx}
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
@@ -14,45 +15,54 @@
 
 \begin{document}
 %
-\title{Contribution Title\thanks{Supported by organization x.}}
+\title{Unsupervised training denoising networks}
 %
 %\titlerunning{Abbreviated paper title}
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
-\author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
-Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
-Third Author\inst{3}\orcidID{2222--3333-4444-5555}}
+\author{Alexey Kovalenko\inst{1}\orcidID{0000-1111-2222-3333} \and
+Yana Demyanenko\inst{1}\orcidID{1111-2222-3333-4444}}
 %
-\authorrunning{F. Author et al.}
+\authorrunning{A. Kovalenko \and Y. Demyanenko}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{Princeton University, Princeton NJ 08544, USA \and
-Springer Heidelberg, Tiergartenstr. 17, 69121 Heidelberg, Germany
-\email{lncs@springer.com}\\
-\url{http://www.springer.com/gp/computer-science/lncs} \and
-ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
-\email{\{abc,lncs\}@uni-heidelberg.de}}
+\institute{Southern Federal University, 	Rostov-on-Don, Russia
+\email{sfedu email}\\
+\url{https://www.sfedu.ru}}
 %
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-The abstract should briefly summarize the contents of the paper in
-15--250 words.
+This work explore approach for image denoising of received by CMOS sensor. Proposed pipeline solves the problem of unsupervised training neural network architectures for image denoising which uses datasets without clean data. This approach bases on theoretical background about image restoration proposed by Nvidia researchers. We implemented custom denoising neural network architectures using specifics of noise distribution. Networks are trained on custom images collection.
 
-\keywords{First keyword  \and Second keyword \and Another keyword.}
+\keywords{Image denoising  \and unsupervised learning \and neural networks \and learning image denoising.}
 \end{abstract}
 %
 %
 %
-\section{First Section}
-\subsection{A Subsection Sample}
-Please note that the first paragraph of a section or subsection is
-not indented. The first paragraph that follows a table, figure,
-equation etc. does not need an indent, either.
+\section{Introduction}
+Шумоподавление является часто встречаемой задачей в области компьютерного зрения. Любое изображение, полученное с помощью CMOS сенсора будет содержать шум. Данный шум появляется у полезного сигнала из-за погрешностей приёма оптического излучения сенсором. Матрицу полезного сигнала будем обозначать $I$, а компоненту шума $\alpha$, предполагая, что процесс появления шума является абсолютно случайным процессом из распределения $\mathit{P}$. Тогда матрицу итогового изображения можно обозначить формулой~\ref{eq:matrix_def}.
 
-Subsequent paragraphs, however, are indented.
+\begin{equation}\label{eq:matrix_def}
+\tilde{I}\ =\ I\ +\ \alpha,\ \alpha \sim \mathit{P}
+\end{equation}
+
+Так как погрешность приёма оптического сигнала зависит от физического устройства CMOS сенсора, то для каждой модели сенсора будет уникальное распределение $\mathit{P}$, порождающее шумовую компоненту сигнала.
+
+Целью данной работы является построение с помощью нейронной сети приближения отображения $\phi: \mathit{R}^n \longrightarrow \mathit{R}^n$, обладающим следующим свойством:
+\begin{equation}\label{eq:main_property}
+\forall \tilde{I} \Longrightarrow \phi(\tilde{I}) = I 
+\end{equation}
+Для построения приближения отображения $\phi$, нейронная сеть $f$ будет обучаться решать следующую задачу оптимизации:
+\begin{eqnarray}\label{eq:main_min_task}
+\min_{\mathnormal{w}} \Arrowvert f(\tilde{I}, \mathnormal{w}) - I \Arrowvert_{L_2}\mathit{ ,}
+\end{eqnarray}
+где $\mathnormal{w}$ - параметры сети $f$, $L_2$ - евклидова норма
+
+
+\section{Related works}
 
 \subsubsection{Sample Heading (Third Level)} Only two levels of
 headings should be numbered. Lower level headings remain unnumbered;
@@ -88,12 +98,12 @@ Please try to avoid rasterized images for line-art diagrams and
 schemas. Whenever possible, use vector graphics instead (see
 Fig.~\ref{fig1}).
 
-\begin{figure}
-\includegraphics[width=\textwidth]{fig1.eps}
-\caption{A figure caption is always placed below the illustration.
-Please note that short captions are centered, while long ones are
-justified by the macro package automatically.} \label{fig1}
-\end{figure}
+% \begin{figure}
+% \includegraphics[width=\textwidth]{fig1.eps}
+% \caption{A figure caption is always placed below the illustration.
+% Please note that short captions are centered, while long ones are
+% justified by the macro package automatically.} \label{fig1}
+% \end{figure}
 
 \begin{theorem}
 This is a sample theorem. The run-in heading is set in bold, while
