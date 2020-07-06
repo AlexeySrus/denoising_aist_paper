@@ -64,6 +64,8 @@ This work explore approach for image denoising of received by CMOS sensor. Propo
 
 \section{Related works}
 
+Весомый вклад в область обучения подавляющих сетей вносит работа исследователей из компании Nvidia с названием Noise2Noise: Learning Image Restoration without Clean Data~\autocite{Noise2NoisePaper}. Главной идеей данной работы является использование представления шума в виде композиции чистого сигнала и уникального, шума, полученного в разный момент времени, для обучения нейронной сети восстанавливать чистый сигнал изображения. На вход нейронной сети подается зашумленное изображение с компонентой шума $\alpha_1$ и от сети требуется предсказать то же изображение, но с компонентой шума $\alpha_2$. Предполагая, что шум, получен случайным образом, нейронная сеть не способна его предсказать, и поэтому при обучении нейронная сеть стремиться восстанавливать изображение с некоторыми потерями.
+
 \subsubsection{Sample Heading (Third Level)} Only two levels of
 headings should be numbered. Lower level headings remain unnumbered;
 they are formatted as run-in headings.
