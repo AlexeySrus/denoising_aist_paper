@@ -22,7 +22,7 @@
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
-\author{Alexey Kovalenko\inst{1}\orcidID{0000-1111-2222-3333} \and
+\author{Alexey Kovalenko\inst{1}\orcidID{0000-0003-4185-3491} \and
 Yana Demyanenko\inst{1}\orcidID{1111-2222-3333-4444}}
 %
 \authorrunning{A. Kovalenko \and Y. Demyanenko}
@@ -44,147 +44,247 @@ This work explore approach for image denoising of received by CMOS sensor. Propo
 %
 %
 \section{Introduction}
-Шумоподавление является часто встречаемой задачей в области компьютерного зрения. Любое изображение, полученное с помощью CMOS сенсора будет содержать шум. Данный шум появляется у полезного сигнала из-за погрешностей приёма оптического излучения сенсором. Матрицу полезного сигнала будем обозначать $I$, а компоненту шума $\alpha$, предполагая, что процесс появления шума является абсолютно случайным процессом из распределения $\mathit{P}$. Тогда матрицу итогового изображения можно обозначить формулой~\ref{eq:matrix_def}.
+Noise reduction is common problem in computer vision. Any image captured by CMOS sensor contains noise. This noise appears in useful signal due to errors in reception of optical radiation by sensor. Clear image signal will be denoted by $I$, and noise component denoted by $\alpha$. Assuming that the process of noise occurrence is an absolutely random process from the distribution of $\mathit{P}$. Then the matrix of the final image can be denoted by formula~(\ref{eq:matrix_def}).
 
 \begin{equation}\label{eq:matrix_def}
 \tilde{I}\ =\ I\ +\ \alpha,\ \alpha \sim \mathit{P}
 \end{equation}
 
-Так как погрешность приёма оптического сигнала зависит от физического устройства CMOS сенсора, то для каждой модели сенсора будет уникальное распределение $\mathit{P}$, порождающее шумовую компоненту сигнала.
+Since the error in receiving optical signal depends on physical device of the CMOS sensor, that for each model of the sensor there will be a unique distribution of $\mathit{P}$, which generates the noise component of the signal.
 
-Целью данной работы является построение с помощью нейронной сети приближения отображения $\phi: \mathit{R}^n \longrightarrow \mathit{R}^n$, обладающим следующим свойством:
+The goal of this work is approximation of the function $\phi: \mathit{R}^n \longrightarrow  \mathit{R}^n$ by neural netwok, which has the following property:
+
 \begin{equation}\label{eq:main_property}
 \forall \tilde{I} \Longrightarrow \phi(\tilde{I}) = I 
 \end{equation}
-Для построения приближения отображения $\phi$, нейронная сеть $f$ будет обучаться решать следующую задачу оптимизации:
+For build of approximation of the mapping $\phi$, the neural network $f$ will be trained to solve the following optimization problem:
 \begin{eqnarray}\label{eq:main_min_task}
 \min_{\mathnormal{w}} \Arrowvert f(\tilde{I}, \mathnormal{w}) - I \Arrowvert_{L_2}\mathit{ ,}
 \end{eqnarray}
-где $\mathnormal{w}$ - параметры сети $f$, $L_2$ - евклидова норма.
+where $\mathnormal{w}$ - neural network weights $f$, $L_2$ - Euclidean norm.
 
 
 \section{Related works}
+Significant contribution to the denoising problem by neural networks is made by the work of Nvidia researchers. This work is titeled Noise2 Noise: Learning Image Restoration without Clean Data. The main idea of this work is using representation of noise as a composition of a clear signal and unique noise received at different points in time to train a neural network to restore a clean image signal. A noisy image with the noise component $\alpha_1$ is forward to neural network and the network is required to predict the same image, but with the noise component $\alpha_2$. Assuming that the noise was obtained randomly, the neural network is not able to predict it, and therefore, during training, the neural network seeks to reconstruct the image with some losses. The disadvantage of this approach is the use of only a pair of images of one scene during training, which can result in large losses of the useful signal during network operation.
 
-Весомый вклад в область обучения шумоподавляющих сетей вносит работа исследователей из компании Nvidia с названием Noise2Noise: Learning Image Restoration without Clean Data. Главной идеей данной работы является использование представления шума в виде композиции чистого сигнала и уникального, шума, полученного в разный момент времени, для обучения нейронной сети восстанавливать чистый сигнал изображения. На вход нейронной сети подается зашумленное изображение с компонентой шума $\alpha_1$ и от сети требуется предсказать то же изображение, но с компонентой шума $\alpha_2$. Предполагая, что шум, получен случайным образом, нейронная сеть не способна его предсказать, и поэтому при обучении нейронная сеть стремиться восстанавливать изображение с некоторыми потерями. Недостатком подхода является использование только пары изображений одной сцены при обучении, тем самым возможны большие потери полезного сигнала при работе сети.
+There is also a lot of researchs touch upon problem of training noise reduction networks on datasets containing images without a noise component. An example of this approach is the work of engineers from Google which titeled Unprocessing Images for Learned Raw Denoising. In this work, the authors will train the network using the standard error function $L_1$. And tested this network on a Darmstadt Noise Dataset dataset.
 
-Также существует ряд работ для обучения шумоподавляющих сетей на наборах данных, содержащих изображения без компоненты шума. Примером такого подхода является работа инженеров из компании Google с названием Unprocessing Images for Learned Raw Denoising. А данной работе авторы обучат сеть с использованием стандартной функции ошибок $L_1$ тестируют на наборе данных Darmstadt Noise Dataset. 
+Darmstadt Noise Dataset datasets contains pairs of images. Each pair consists of an image taken with correctly selected camera parameters for shooting and an image having noises arising from incorrect parameters. Networks trained on such data sets do not solve the problem of suppressing noise arising from the CMOS sensor of a camera even in the most correctly selected shooting parameters.
 
-Наборы данных по типу Darmstadt Noise Dataset содержат пары изображений. Каждая пара состоит из изображение, снятого при правильно подобранных параметров камеры для съемки и изображения, имеющего шумы, возникающие из-за некорректных параметров. Сети, обученные на таких наборах данных не решают задачу подавления шума, возникающего у CMOS сенсора камеры даже в максимально корректно подобранных параметрах съемки.
-
-Таким образом для обучения сети, ориентированной на подавления шума с определенного CMOS сенсора возникает необходимость в сборе данных и разработки метода обучения сети на них.
+Thus, for training a network focused on denoising from a specific CMOS sensor, it becomes necessary to collect data and develop a method for training a network on them.
 
 \section{Dataset}
 
 \subsection{Collecting dataset}
 
-Изображения для проведения исследования были получены с помощью фиксированного устройства, \textit{Apple iPhone X}, имеющего камеру, состоящую из двух сенсоров, с характеристиками, приведенными в следующем источнике (источник).
+Images for training dataset were obtained using a certain device, \textit{Apple iPhone X}, which has a camera consisting of two sensors, with the characteristics given in the following source (source).
 
-С данного устройства были сделаны серии RAW изображений семи сцен с различным освещением и цветовым наполнением. Данные серии получены стандартными средствами для съёмки на устройстве. При такой съемке автоматически применяются алгоритмы улучшения кадра на устройстве, в том числе и подавление шума. Данные алгоритмы являются коммерческой тайной компании Apple. Под сценой подразумевается съёмка неизменяемой картины реального мира, получая матрицу~(\ref{eq:matrix_def}). Для этого устройство фиксировалось на штативе в неподвижном состоянии  и запуск процесса съёмки кадра производился  с беспроводного устройства, тем самым получая набор изображений $\{\tilde{I}^q_k\}_{k=1}^{N}$~(\ref{eq:collection}), где $q$ - порядковый номер снимаемой сцены. Для каждой сцены при съемке были зафиксированны значения ISO, фокуса и цветовой температуры. 
+From this device a series of RAW images of seven scenes with different lighting and color component ware obtained. A scene made by shooting an static picture of the real world, getting the matrix~(\ref{eq:matrix_def}). To do this, the device was fixed on a tripod in a stationary state and the shooting process was started from a wireless device, thereby obtaining a set of images $\{\tilde{I}^q_k\}_{k=1}^{N}$, where $q$ is the sequence number of the scene being shot. For each series ISO, focus and color temperature values were fixed when shooting.
 
-Каждая сцена содержит в среднем по $14$ фотографий, суммарное количество кадров из всех наборов составляет $95$ изображений.
+Each scene contains about $14$ photos. Total number of frames from all sets is $ 95 $ images.
 
-Максимальное количество изображений в одной серии ограничено $20$-ю кадрами, так как при продолжении процесса съёмки фотосенсор нагревается и из-за теплового воздействия появляются дополнительные искажения сигнала, из-за которых теряется попиксельное соответствие кадров в серии между собой.
+The maximum number of images in one series is limited to $20$ frames because CMOS sencor heats with long time the shooting process continues and additional signal distortions appear due to thermal effects. Due to this effect of which the pixel-by-pixel correspondence of frames in the series to each other is lost.
 
-В итоге получается набор данных, состоящий из $125$ изображений, снятых на один сенсор. Визуальное различие шума на изображениях, полученных разными подходами можно рассмотреть на рисунке~\ref{fig:noise_comprasion}.
+The result is a dataset consisting of $125$ images taken on one sensor.
 
-Также для сравнения результатов были сделаны 6 серий, снятых следующей web камерой в разрешении $1920\times1080$. Снимались видеозаписи короткой длительности и разбивались на кадры. Суммарное количество кадров в данных сериях составило $811$.
+Also, to compare the results, 6 series were made, shot by next web camera in the resolution of $1920\times1080$. Short videous were shot and divided into frames. Total number of frames in these series was $811$.
 
-\subsection{Analysis dataset}
-Во время процесса съемки при нагреве фотосенсора могут происходить незначительные искажения кадра. Или также возможны незаметные смещения устройства при съемке, а также смена внешних условий, таких как освещение или движение объектов в кадре. Для собираемого набора изображений сдвиг более чем на один пиксель между кадрами одной серии уже критичен.
+\subsection{Analysing dataset}
+During the shooting process, slight distortion of the frame may occur when the photosensor is heated. Or imperceptible displacements of the device during shooting, as well as a change in external conditions, such as lighting or movement of objects in the frame, are also possible. For an collected set of images, a shift value of more than one pixel between frames of the same series is already critical.
 
-Для анализа качества полученных серий изображений были построены распределения $e^q$~(\ref{eq:series_distribution}) отклонений каждого изображения от усредненного по всем изображениям из серии $\hat{I}^q$~(\ref{eq:mean_image}) по евклидовой метрике.
+To analyze the quality of the obtained series of images, the distributions of $e^q$~(\ref{eq:series_distribution}) deviations of each image from the average over all images from the series $\hat{I}^q$ by the Euclidean metric.
+
 \begin{eqnarray}\label{eq:mean_image}
-\hat{I}^q_{i,j}\ =\ \frac{\sum_{k}\tilde{I}^q_{k\ i,j}}{N}\textit{, где }N\textit{ количество кадров в выборке }q
+\hat{I}^q_{i,j}\ =\ \frac{\sum_{k}\tilde{I}^q_{k\ i,j}}{N}\textit{, where }N\textit{ is count of frames in series }q
 \end{eqnarray}
 
 \begin{eqnarray}\label{eq:series_distribution}
 e^q_k\ =\ \Arrowvert \hat{I}^q - \tilde{I}^q_k \Arrowvert_{L_2}
 \end{eqnarray}
-Дополнительно производится нормировка выборки по метрике $L_1$:
+Additionally, the series is normalized by metric $L_1$:
 $$e^q_k\ =\ \frac{e^q_k}{\sum_{i}(e^q_i)}$$
 
-Далее по значениям выборки $e^q$~(\ref{eq:series_distribution}) строятся графики плотности нормального распределения $\mathcal{N}(\mu, \sigma)$ с параметрами:
+Then, using the values of the sample $e^q$~(\ref{eq:series_distribution}), we plot the density curves of the normal distribution $\mathcal{N}(\mu, \sigma)$ with the parameters:
 \begin{eqnarray}\label{eq:mean_and_std}
 \mu^q = \mu(e^q),\ \sigma^q = \sigma(e^q)
 \end{eqnarray}
 
-Таким образом математическое ожидание $\mu^q$~(\ref{eq:mean_and_std}) показывает насколько усредненное изображение $\hat{I}^q$~(\ref{eq:mean_image}) близко к изображению, теоретически, получаемому из чистого сигнала $I^q$~(\ref{eq:collection}): 
+Thus, the mathematical expectation of $\mu^q$~(\ref {eq:mean_and_std}) shows how near the average image of $\hat{I}^q$~(\ref{eq:mean_image}  to the image theoretically obtained from a pure signal $I^q$~(\ref{eq:collection}): 
 \begin{eqnarray}\label{eq:mean_image_approximation}
 \hat{I}^q \xrightarrow[\mu^q \rightarrow 0]{} I^q
 \end{eqnarray}
 
-А также, чем ближе к $0$ значение среднеквадратичного отклонения выборки $\sigma^q$~(\ref{eq:mean_and_std}), тем на большем количестве изображений из серии присутствует сигнал $G(t)$~(\ref{eq:signal_decomposition}), зафиксированный в момент времени $t = t_0$, то есть насколько сцена неизменна между кадрами.
+And also, the near to $0$ the value of the standard deviation of the sample $\sigma^q$~(\ref{eq:mean_and_std}), the more images from the series there is a signal of static scene, fixed at time $ t = t_0 $, that is, how much the scene is unchanged between frames.
 
-Рассматриваемый параметр $\sigma$~(\ref{eq:mean_and_std}) сильно зависит не только от движения объектов на снимаемой сцене, но и от уровня освещения. Сдвиг объектив особо критичен, так как обученная нейросеть на такой выборке будет размывать результирующие изображение.
-
-Также большое значение отклонения $\sigma$~(\ref{eq:mean_and_std}), полученное из-за сильного изменения освещения при съемке также неблагоприятно скажется на качестве обучения нейронной сети, так как нейронная сеть, обученная на таких сериях, не сможет корректно предсказывать цветовую гамму результирующего изображения. Пример зависимости параметра отклонения от уровня освещения снимаемой сцены при естественном освещении изображен на рисунке~\ref{fig:hists_comparision}. Из данного примера  можно заметить, что незначительные отклонения в освещении, различимые по небольшим отличиям в цветовых гистограммах изображений из серии сильно влияют на параметр $\sigma$~(\ref{eq:mean_and_std}), и для данной статичной сцены данный параметр близок к значению, получаемому у сцены с сильным сдвигом~\ref{fig:deviations_comparision}.
+For example, the deviation parameter $\sigma$~(\ref{eq:mean_and_std} may be quite large with different illumination of the same scene between frames (see Fig.~\ref{fig:hists_comparision}).
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{img/imgs_8_series_stack_image}
-	\caption{Серия изображений с цветовыми гистограммами, параметр $\sigma$ данной серии равен $0.00608$ }
+	\caption{Series of images with color histograms, the parameter $\sigma$ of this series is $0.00608$}
 	\label{fig:hists_comparision}
 \end{figure}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=\textwidth]{img/night_condition_series_real_noise_iphone_deviation_comparison}
-	\caption{Графики плотностей нормальных распределений для серий, снятых при условиях плохого искусственного освещения с помощью приложения}
-	\label{fig:distribuion_real_noise}
-\end{figure}
+For demonstrate the various values of the deviation parameter, a graph is constructed (see Fig.~\ref{fig:distribuion_real_noise_good_condition}).
 
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{img/good_condition_series_real_noise_iphone_deviation_comparison}
-	\caption{Графики плотностей нормальных распределений для серий, снятых при условиях естественного освещения с помощью приложения}
+	\caption{Normal distribution density plots for series shot under natural light conditions}
 	\label{fig:distribuion_real_noise_good_condition}
+\end{figure}
+
+
+When choosing data for training neural networks, the condition is set that the parameter $\sigma$~(\ref{eq:mean_and_std}) should not exceed the value of $0.007$.
+
+
+\section{Architectures}
+
+\subsection{Base architecture block}
+
+To build architectures in this work, the blocks from the ResNet architecture were taken and modified. The scheme of these blocks is shown(see Fig.~\ref{fig:detail_adjuster_resnet_block}).
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.07]{img/resnet_adjusted}
+	\caption{Detailed scheme of modified ResNet block} 
+	\label{fig:detail_adjuster_resnet_block}
+\end{figure}
+
+\subsection{Mobile architecture}
+
+Based on the blocks (see Fig.~\ref{fig:detail_adjuster_resnet_block}), an architecture is constructed that has a small number of trained parameters and a high speed of operation (see Fig.~\ref{fig:simple_net_architecture}).
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.07]{img/simple_net_architecture}
+	\caption{Scheme of mobile denoising architecture} 
+	\label{fig:simple_net_architecture}
+\end{figure}
+
+\subsection{Architecture with frequency components splitting}
+
+Рассматриваемый шум~(\ref{eq:matrix_def}) принадлежит высокочастотной компоненте сигнала изображения. Пример декомпозиции сигнала изображения на высокие и низкие частоты с помощью фильтра Баттерворта изображен на рисунке~\ref{fig:fft_comparison}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/fft_comparison}
+	\caption{Слева на право: оригинальная часть изображения, двумерный спектр фурье для изображения, переведенного в серые тона, визуализация фильтра Баттерворта, низкочастотная компонента изображения, высокочастотная компонента изображения}
+	\label{fig:fft_comparison}
+\end{figure}
+
+
+Учитывая такое распрделение компоненты шума была разработана архитектура с разделением сигнала на высокочастотный и низкочастотный сигналы и дальнейшей независимой обработкой их сверточными слоями сети. Данная схема изображена на рисунке~\ref{fig:architecture_fft_decomposition}.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.045]{img/architecture_fft_decomposition}
+	\caption{Детальная схема архитектуры шумоподавляющей сети с частотной декомпозицией входного изображения}
+	\label{fig:architecture_fft_decomposition}
+\end{figure}
+
+Архитектура~\ref{fig:architecture_fft_decomposition} состоит из четырех высокоуровневых блока, и конфигурируется параметрами $N$ и $K$, задающими количество последовательно идущих базовых блоков, чем больше данные параметры, тем более глубокой получ ается итоговая архитектура. Каналы, полученные после частотной декомпозиции сигнала и входной сигнал изображения обрабатываются отдельными блоками, состоящими из сверточных слоев и измененных базовых блоков архитектуры ResNet~\ref{fig:detail_adjuster_resnet_block}. Таким образом из каждого представления изображения извлекаются полезные признаки, не зависящие от остальных. Далее происходит конкатенация по размерности каналов трех выходов сверточных блоков обработки сигналов, после чего данный тензор обрабатывается трехмерным сверточным слоем. На данном шаге используется именно слой трехмерной свертки, а не двумерные сверточные слои, так как при обучении сети данный слой не будет учитывать зависимости между выходами блоков, а обрабатывать их по-отдельности, что не позволит извлекать следующим слоям зависимости между высокоуровневыми признаками разных частот. После трехмерного сверточного слоя идет блок итоговой обработки результатов предыдущего слоя и построение отображения этих признаков в результирующие изображение. 
+
+
+Таким образом данная архитектура, строящаяся на обработки объединения независимых выходов блоков предобработки разделенного сигнала, позволяет извлекать больше признаков для восстановления входного изображения, тем самым лучше решая поставленную задачу в пункте~\ref{sec:set_task}. Также эта архитектура является автоэнкодером с расширенным скрытым пространством.
+
+Данная архитектура имеет $511390$ обучаемых параметра и вес данной модели составляет $2$ мегабайта при использовании чисел с одинарной точностью FP32 для хранения параметров.
+
+\section{Training}
+Имея набор снятых коллекций для обучения в виде~(\ref{eq:collection}), описанных в пункте~\ref{sec:our_data}, можно строить приближение к чистому изображению с помощью усреднения выборки. Данный способ построения приближения выводится в формуле~(\ref{eq:mean_image_approximation}). Имея такую выборку можно обучать сверточные нейронные сети с помощью подхода обучения с учителем. Но так как на вход сети будет подаваться изображение из данной серии, то в данных, которые требуется предсказать содержится усредненная компонента входных данных, и сеть будет стремиться предсказать её, тем самым усредняя признаки изображения и выходное изображение будет иметь некоторое размытие. Данная проблема решается подходом, рассматриваемым авторами работы Noise2Noise: Learning Image Restoration without Clean Data. Чтобы в выходных обучающих данных не содержались входные, для построения чистых изображений будут усредняться все изображения, за исключением, подаваемого на вход сети. Таким образом, рассматривая выборку \\$\{\tilde{I}_k\}_{k=1}^{N}$, входные данные $X$ и ожидаемые на выходе сети $y$ строятся по следующим формулам:
+\begin{equation}\label{eq:dataset}
+X_i = \tilde{I_i},\ y = \frac{\sum_{k=1, k \ne i}^{N}\tilde{I_k}}{N - 1}
+\end{equation}
+
+После построения наборов $X$ и $y$ для генерации примеров обучающей выборки из $X$ и $y$ вырезается квадратное изображение, заданного размера $s$ по случайным начальных координатам. Таким образом получаем данные $\tilde{x}$ и $\tilde{y}$, подаваемые на сеть в процессе обучения. Также к данным примерам применяются следующие аугментации в процессе обучения: повороты на 90, 180 и 270 градусов, отражения относительно горизонтальной и вертикальной центральной оси.
+
+
+Архитектура, изображенная на рисунке~\ref{fig:simple_net_architecture} реализована и обучалась на фреймворке глубокого обучения PyTorch и с помощью оптимизатора radam с параметром обучения $0.01$. Размер входного изображения составляет $224$ на $224$ пикселя.
+
+
+Архитектура сети с частотной декомпозицией входного изображения также реализована на фреймворке PyTorch с глобальными параметрами $N = 5$ и $K = 5$. Данная сеть обучалась оптимизатором radam c параметром обучения $0.0001$. При таком параметре сеть имеет лучшую сходимость обучения. Размер входного изображения составляет $224$ на $224$ пикселя.
+
+\section{Inference}
+В процессе обработки изображение разбивается на части, имеющие размер ожидаемого входного изображения шумоподавляющей сетью, в экспериментах данной работы, это $224$ на $224$ пикселя. Также для улучшения качества при обработки каждой части производится аугментация входного изображения и к результатам сети применяются обратные преобразования к используемым при аугментации. Усреднение полученных данных улучшает качество предсказания. Множество аугментаций состоит из 8 преобразований: повороты на 0, 90, 180, 270 градусов, и отражение изображения относительно горизонтальной и вертикальный оси. Таким образом получаются 8 входных изображений, и результат расчитывается по следующей формуле~(\ref{eq:times_series_augmentation}). В данной формуле, $T_{i}$ - соответствующее преобразование изображение, а $T_{i}^{-1}$ - обратное к нему преобразование.
+
+\begin{eqnarray}\label{eq:times_series_augmentation}
+I_{result}\ =\ \frac{\sum_{n=1}^{8} T_{i}^{-1}(T_{i}(f(x)))}{8}
+\end{eqnarray}
+
+
+\section{Results}
+Для сравнения результатов был выбран алгоритм нелокального шумоподавления усреднением из библиотеки OpenCV, так как он визуально показывает наилучшие результаты подавления шумов на изображении. Входные данные и веса моделей из данных экспериментов можно скачать по соответствующим ссылкам в описании репозитория, ссылка на который приведена в приложении к данной работе.
+
+Для тестирования производительности подходов используется следующий CPU: \textit{Intel i9 10920X}.
+
+\begin{figure}4
+	\centering
+	\includegraphics[width=\textwidth]{img/real_noise_mobile}
+	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы мобильной архитектуры, результат работы подхода нелокального шумоподавления усреднением}
+	\label{fig:real_noise_mobile}
 \end{figure}
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/series_webcam_deviation_comparison}
-	\caption{Графики плотностей нормальных распределений для серий, снятых при разных условиях освещения с помощью web камеры}
-	\label{fig:distribuion_webcam}
+	\includegraphics[width=\textwidth]{img/real_noise_mobile_2}
+	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы мобильной архитектуры, результат работы подхода нелокального шумоподавления усреднением}
+	\label{fig:real_noise_mobile_2}
+\end{figure}
+
+Из примеров, изображенных на рисунках~\ref{fig:real_noise_mobile} и~\ref{fig:real_noise_mobile_2} можно увидеть, что мобильная архитектура полностью не удаляет компоненту шума на входном изображении, но при этом сеть не портит входной сигнал по сравнению с подходом Non-Local Means Denoising, где сглаживается часть изображения. Также не оптимизированная версия сети на CPU обрабатывает данные примеры в среднем за $0.95$ секунды, а Non-Local Means Denoising за  $1.05$.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/real_noise_webacam_mobile}
+	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы мобильной архитектуры}
+	\label{fig:real_noise_webacam_mobile}
+\end{figure}
+
+Анализируя результаты, полученные сетью с частотной декомпозицией входного изображени, изображенные на рисунках~\ref{fig:real_noise_advanced} и~\ref{fig:real_noise_advanced_2}, можно увидеть, что они содержат меньше шума, чем усредненное изображение по серии кадров. Результата, при котором результирующее изображение имеет лучшее характеристики, чем требуемое в качестве предсказания от сети, получилось достичь за счет использования подхода для обучения, предлагаемого авторами работы Noise2Noise: Learning Image Restoration without Clean Data, с рядом улучшений. Подход нелокального шумоподавления усреднением относительно предсказания нейронной сети, имеет те же недостатки, что и в тестах архитектуры из предыдущего пункта~\ref{sec:mobile_net_test}. Среднее время обработки тестируемых примеров данной архитектурой на CPU составляет $9.49$ секунд.
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/real_noise_advanced}
+	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы архитектуры с частотной декомпозицией входного изображения, результат работы подхода нелокального шумоподавления усреднением}
+	\label{fig:real_noise_advanced}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/real_noise_advanced_2}
+	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы архитектуры с частотной декомпозицией входного изображения, результат работы подхода нелокального шумоподавления усреднением}
+	\label{fig:real_noise_advanced_2}
 \end{figure}
 
 
-При выборе данных для обучения нейронных сетей подавляющих шум на изображении задается условие, что параметр $\sigma$~(\ref{eq:mean_and_std}) не должен превышать значения $0.007$
+Если применять данную сеть к изображениям, полученным другим сенсором камеры, то глубокая архитектура с частотной декомпозицией сигнала работает на порядок лучше мобильной архитектуры. Но при этом получаемый результат всё ещё не является удовлетворительным. Результат работы данной архитектуры на изображении, полученного с помощью сенсора вебкамеры приведен на изображении~\ref{fig:real_noise_webacam_advanced}.
+
+Для улучшения качества предсказания на различных устройствах можно смешивать обучающие выборки, полученные с разных сенсоров, но при этом ухудшится качество предсказания сети. Это связано с тем, что при обучении на кадрах с одного устройства, сеть способна выделять признаки, присущие конкретному сенсору, и лучше применять их для предсказания чистого сигнала.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/real_noise_webacam_advanced}
+	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы архитектуры с частотной декомпозицией входного изображения}
+	\label{fig:real_noise_webacam_advanced}
+\end{figure}
+
+\section{Summary}
+
+Результатом работы является реализация подхода для обучения шумоподавляющих сетей на выборках, без наличия данных, не содержащих компоненты шума. Также в рамках работы были разработаны и реализованы две архитектуры шумоподавляющей сети, обученные с помощью реализованного подхода. Первая архитектура ориентирована на использование в малопроизводительных системах, таких как мобильные устройства или для работы в режиме реального времени на высокопроизводительных системах. Вторая архитектура имеет значительно большую вычислительную сложность в сравнении с первой, но решает задачу шумоподавления более эффективно. Также для улучшения качества предсказания сетей был использован подход усреднения результатов предсказания на аугментациях входного изображения обратимыми операциями.
+
+По визуальной оценке обученные архитектуры нейронных сетей достаточно эффективно решают поставленную задачу оптимизации~(\ref{eq:main_min_task}) на собранных для данной работы коллекции данных.
 
 
-\subsubsection{Sample Heading (Third Level)} Only two levels of
-headings should be numbered. Lower level headings remain unnumbered;
-they are formatted as run-in headings.
-
-\paragraph{Sample Heading (Fourth Level)}
-The contribution should contain no more than four levels of
-headings. Table~\ref{tab1} gives a summary of all heading levels.
-
-\begin{table}
-\caption{Table captions should be placed above the
-tables.}\label{tab1}
-\begin{tabular}{|l|l|l|}
-\hline
-Heading level &  Example & Font size and style\\
-\hline
-Title (centered) &  {\Large\bfseries Lecture Notes} & 14 point, bold\\
-1st-level heading &  {\large\bfseries 1 Introduction} & 12 point, bold\\
-2nd-level heading & {\bfseries 2.1 Printing Area} & 10 point, bold\\
-3rd-level heading & {\bfseries Run-in Heading in Bold.} Text follows & 10 point, bold\\
-4th-level heading & {\itshape Lowest Level Heading.} Text follows & 10 point, italic\\
-\hline
-\end{tabular}
-\end{table}
-
-
-\noindent Displayed equations are centered and set on a separate
-line.
-\begin{equation}
-x + y = z
-\end{equation}
-Please try to avoid rasterized images for line-art diagrams and
-schemas. Whenever possible, use vector graphics instead (see
-Fig.~\ref{fig1}).
+% \noindent Displayed equations are centered and set on a separate
+l% ine.
+% \begin{equation}
+% x + y = z
+% \end{equation}
+% Please try to avoid rasterized images for line-art diagrams and
+% schemas. Whenever possible, use vector graphics instead (see
+% Fig.~\ref{fig1}).
 
 % \begin{figure}
 % \includegraphics[width=\textwidth]{fig1.eps}
@@ -193,28 +293,6 @@ Fig.~\ref{fig1}).
 % justified by the macro package automatically.} \label{fig1}
 % \end{figure}
 
-\begin{theorem}
-This is a sample theorem. The run-in heading is set in bold, while
-the following text appears in italics. Definitions, lemmas,
-propositions, and corollaries are styled the same way.
-\end{theorem}
-%
-% the environments 'definition', 'lemma', 'proposition', 'corollary',
-% 'remark', and 'example' are defined in the LLNCS documentclass as well.
-%
-\begin{proof}
-Proofs, examples, and remarks have the initial word in italics,
-while the following text appears in normal font.
-\end{proof}
-For citations of references, we prefer the use of square brackets
-and consecutive numbers. Citations using labels or the author/year
-convention are also acceptable. The following bibliography provides
-a sample reference list with entries for journal
-articles~\cite{ref_article1}, an LNCS chapter~\cite{ref_lncs1}, a
-book~\cite{ref_book1}, proceedings without editors~\cite{ref_proc1},
-and a homepage~\cite{ref_url1}. Multiple citations are grouped
-\cite{ref_article1,ref_lncs1,ref_book1},
-\cite{ref_article1,ref_book1,ref_proc1,ref_url1}.
 %
 % ---- Bibliography ----
 %
