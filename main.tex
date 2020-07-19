@@ -65,9 +65,9 @@ where $\mathnormal{w}$ - neural network weights $f$, $L_2$ - Euclidean norm.
 
 
 \section{Related works}
-Significant contribution to the denoising problem by neural networks is made by the work of Nvidia researchers. This work is titeled Noise2 Noise: Learning Image Restoration without Clean Data. The main idea of this work is using representation of noise as a composition of a clear signal and unique noise received at different points in time to train a neural network to restore a clean image signal. A noisy image with the noise component $\alpha_1$ is forward to neural network and the network is required to predict the same image, but with the noise component $\alpha_2$. Assuming that the noise was obtained randomly, the neural network is not able to predict it, and therefore, during training, the neural network seeks to reconstruct the image with some losses. The disadvantage of this approach is the use of only a pair of images of one scene during training, which can result in large losses of the useful signal during network operation.
+Significant contribution to the denoising problem by neural networks is made by the work of Nvidia researchers. This work is titled Noise2 Noise: Learning Image Restoration without Clean Data. The main idea of this work is using representation of noise as a composition of a clear signal and unique noise received at different points in time to train a neural network to restore a clean image signal. A noisy image with the noise component $\alpha_1$ is forward to neural network and the network is required to predict the same image, but with the noise component $\alpha_2$. Assuming that the noise was obtained randomly, the neural network is not able to predict it, and therefore, during training, the neural network seeks to reconstruct the image with some losses. The disadvantage of this approach is the use of only a pair of images of one scene during training, which can result in large losses of the useful signal during network operation.
 
-There is also a lot of researchs touch upon problem of training noise reduction networks on datasets containing images without a noise component. An example of this approach is the work of engineers from Google which titeled Unprocessing Images for Learned Raw Denoising. In this work, the authors will train the network using the standard error function $L_1$. And tested this network on a Darmstadt Noise Dataset dataset.
+There is also a lot of researches touch upon problem of training noise reduction networks on datasets containing images without a noise component. An example of this approach is the work of engineers from Google which titled Unprocessing Images for Learned Raw Denoising. In this work, the authors will train the network using the standard error function $L_1$. And tested this network on a Darmstadt Noise Dataset dataset.
 
 Darmstadt Noise Dataset datasets contains pairs of images. Each pair consists of an image taken with correctly selected camera parameters for shooting and an image having noises arising from incorrect parameters. Networks trained on such data sets do not solve the problem of suppressing noise arising from the CMOS sensor of a camera even in the most correctly selected shooting parameters.
 
@@ -83,11 +83,11 @@ From this device a series of RAW images of seven scenes with different lighting 
 
 Each scene contains about $14$ photos. Total number of frames from all sets is $ 95 $ images.
 
-The maximum number of images in one series is limited to $20$ frames because CMOS sencor heats with long time the shooting process continues and additional signal distortions appear due to thermal effects. Due to this effect of which the pixel-by-pixel correspondence of frames in the series to each other is lost.
+The maximum number of images in one series is limited to $20$ frames because CMOS sensor heats with long time the shooting process continues and additional signal distortions appear due to thermal effects. Due to this effect of which the pixel-by-pixel correspondence of frames in the series to each other is lost.
 
 The result is a dataset consisting of $125$ images taken on one sensor.
 
-Also, to compare the results, 6 series were made, shot by next web camera in the resolution of $1920\times1080$. Short videous were shot and divided into frames. Total number of frames in these series was $811$.
+Also, to compare the results, 6 series were made, shot by next web camera in the resolution of $1920\times1080$. Short videos were shot and divided into frames. Total number of frames in these series was $811$.
 
 \subsection{Analysing dataset}
 During the shooting process, slight distortion of the frame may occur when the photosensor is heated. Or imperceptible displacements of the device during shooting, as well as a change in external conditions, such as lighting or movement of objects in the frame, are also possible. For an collected set of images, a shift value of more than one pixel between frames of the same series is already critical.
@@ -165,48 +165,42 @@ Based on the blocks (see Fig.~\ref{fig:detail_adjuster_resnet_block}), an archit
 
 \subsection{Architecture with frequency components splitting}
 
-Рассматриваемый шум~(\ref{eq:matrix_def}) принадлежит высокочастотной компоненте сигнала изображения. Пример декомпозиции сигнала изображения на высокие и низкие частоты с помощью фильтра Баттерворта изображен на рисунке~\ref{fig:fft_comparison}.
+The noise in question~(\ref{eq:matrix_def}) belongs to the high frequency component of the image signal. An example of decomposition of an image signal into high and low frequencies using the Butterworth filter is shown(see Fig.~\ref {fig:fft_comparison}).
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{img/fft_comparison}
-	\caption{Слева на право: оригинальная часть изображения, двумерный спектр фурье для изображения, переведенного в серые тона, визуализация фильтра Баттерворта, низкочастотная компонента изображения, высокочастотная компонента изображения}
+	\caption{From left to right: original part of the image, 2D Fourier spectrum for the grayscale image, rendering of the Butterworth filter, low-frequency component of the image, high-frequency component of the image}
 	\label{fig:fft_comparison}
 \end{figure}
 
-
-Учитывая такое распрделение компоненты шума была разработана архитектура с разделением сигнала на высокочастотный и низкочастотный сигналы и дальнейшей независимой обработкой их сверточными слоями сети. Данная схема изображена на рисунке~\ref{fig:architecture_fft_decomposition}.
+Taking into account such a distribution of the noise component, an architecture was developed with the separation of the signal into high-frequency and low-frequency signals and their further independent processing by the convolutional layers of the network. This scheme is shown(see Fig.~\ref{fig:architecture_fft_decomposition}).
 
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.045]{img/architecture_fft_decomposition}
-	\caption{Детальная схема архитектуры шумоподавляющей сети с частотной декомпозицией входного изображения}
+	\caption{Detailed architecture diagram of denoising network with frequency decomposition of input image}
 	\label{fig:architecture_fft_decomposition}
 \end{figure}
 
-Архитектура~\ref{fig:architecture_fft_decomposition} состоит из четырех высокоуровневых блока, и конфигурируется параметрами $N$ и $K$, задающими количество последовательно идущих базовых блоков, чем больше данные параметры, тем более глубокой получ ается итоговая архитектура. Каналы, полученные после частотной декомпозиции сигнала и входной сигнал изображения обрабатываются отдельными блоками, состоящими из сверточных слоев и измененных базовых блоков архитектуры ResNet~\ref{fig:detail_adjuster_resnet_block}. Таким образом из каждого представления изображения извлекаются полезные признаки, не зависящие от остальных. Далее происходит конкатенация по размерности каналов трех выходов сверточных блоков обработки сигналов, после чего данный тензор обрабатывается трехмерным сверточным слоем. На данном шаге используется именно слой трехмерной свертки, а не двумерные сверточные слои, так как при обучении сети данный слой не будет учитывать зависимости между выходами блоков, а обрабатывать их по-отдельности, что не позволит извлекать следующим слоям зависимости между высокоуровневыми признаками разных частот. После трехмерного сверточного слоя идет блок итоговой обработки результатов предыдущего слоя и построение отображения этих признаков в результирующие изображение. 
+Implemented architecture (see Fig.~\ref{fig:architecture_fft_decomposition}) consists of a layer of frequency signal decomposition and sequential processing of parts of the input signal using convolutional blocks. Then the signals from blocks with are concatenated by channels and processed by a 3D convolutional layer to extract high-level features with interchannel dependence.
 
-
-Таким образом данная архитектура, строящаяся на обработки объединения независимых выходов блоков предобработки разделенного сигнала, позволяет извлекать больше признаков для восстановления входного изображения, тем самым лучше решая поставленную задачу в пункте~\ref{sec:set_task}. Также эта архитектура является автоэнкодером с расширенным скрытым пространством.
-
-Данная архитектура имеет $511390$ обучаемых параметра и вес данной модели составляет $2$ мегабайта при использовании чисел с одинарной точностью FP32 для хранения параметров.
+This architecture has $511390$ of trainable parameters and the weight of this model is $2$ megabytes when using single precision FP32 numbers to store the parameters.
 
 \section{Training}
-Имея набор снятых коллекций для обучения в виде~(\ref{eq:collection}), описанных в пункте~\ref{sec:our_data}, можно строить приближение к чистому изображению с помощью усреднения выборки. Данный способ построения приближения выводится в формуле~(\ref{eq:mean_image_approximation}). Имея такую выборку можно обучать сверточные нейронные сети с помощью подхода обучения с учителем. Но так как на вход сети будет подаваться изображение из данной серии, то в данных, которые требуется предсказать содержится усредненная компонента входных данных, и сеть будет стремиться предсказать её, тем самым усредняя признаки изображения и выходное изображение будет иметь некоторое размытие. Данная проблема решается подходом, рассматриваемым авторами работы Noise2Noise: Learning Image Restoration without Clean Data. Чтобы в выходных обучающих данных не содержались входные, для построения чистых изображений будут усредняться все изображения, за исключением, подаваемого на вход сети. Таким образом, рассматривая выборку \\$\{\tilde{I}_k\}_{k=1}^{N}$, входные данные $X$ и ожидаемые на выходе сети $y$ строятся по следующим формулам:
+
+
+To use all frames from a series of images, one frame from a series was use to the network input, and a series averaging without an input frame was used as the expected output signal. Based on the sample \\$\{\tilde{I} _k\} _ {k=1}^{N}$, the input $X$ and the expected at the output of the network $y$ are constructed using the following formula:
 \begin{equation}\label{eq:dataset}
 X_i = \tilde{I_i},\ y = \frac{\sum_{k=1, k \ne i}^{N}\tilde{I_k}}{N - 1}
 \end{equation}
 
-После построения наборов $X$ и $y$ для генерации примеров обучающей выборки из $X$ и $y$ вырезается квадратное изображение, заданного размера $s$ по случайным начальных координатам. Таким образом получаем данные $\tilde{x}$ и $\tilde{y}$, подаваемые на сеть в процессе обучения. Также к данным примерам применяются следующие аугментации в процессе обучения: повороты на 90, 180 и 270 градусов, отражения относительно горизонтальной и вертикальной центральной оси.
+Denoising model was trained on random cropped images and using the following augmentation: rotations by 90, 180, 270 degrees and flips.
 
-
-Архитектура, изображенная на рисунке~\ref{fig:simple_net_architecture} реализована и обучалась на фреймворке глубокого обучения PyTorch и с помощью оптимизатора radam с параметром обучения $0.01$. Размер входного изображения составляет $224$ на $224$ пикселя.
-
-
-Архитектура сети с частотной декомпозицией входного изображения также реализована на фреймворке PyTorch с глобальными параметрами $N = 5$ и $K = 5$. Данная сеть обучалась оптимизатором radam c параметром обучения $0.0001$. При таком параметре сеть имеет лучшую сходимость обучения. Размер входного изображения составляет $224$ на $224$ пикселя.
+For denoising models training was implemented pipeline based on PyTorch framework. As optimizer for was models training used radam optimizer (link to paper).
 
 \section{Inference}
-В процессе обработки изображение разбивается на части, имеющие размер ожидаемого входного изображения шумоподавляющей сетью, в экспериментах данной работы, это $224$ на $224$ пикселя. Также для улучшения качества при обработки каждой части производится аугментация входного изображения и к результатам сети применяются обратные преобразования к используемым при аугментации. Усреднение полученных данных улучшает качество предсказания. Множество аугментаций состоит из 8 преобразований: повороты на 0, 90, 180, 270 градусов, и отражение изображения относительно горизонтальной и вертикальный оси. Таким образом получаются 8 входных изображений, и результат расчитывается по следующей формуле~(\ref{eq:times_series_augmentation}). В данной формуле, $T_{i}$ - соответствующее преобразование изображение, а $T_{i}^{-1}$ - обратное к нему преобразование.
+On inference input image unfolds on grid of crop. Network forwards on each crop with test-time data augmentation with transforms from training (link to paper). Result image computed by formula~(\ref{eq:times_series_augmentation}), where $T_{i}$ - augmentation transform, а $T_{i}^{-1}$ - inverse transform.
 
 \begin{eqnarray}\label{eq:times_series_augmentation}
 I_{result}\ =\ \frac{\sum_{n=1}^{8} T_{i}^{-1}(T_{i}(f(x)))}{8}
@@ -214,71 +208,58 @@ I_{result}\ =\ \frac{\sum_{n=1}^{8} T_{i}^{-1}(T_{i}(f(x)))}{8}
 
 
 \section{Results}
-Для сравнения результатов был выбран алгоритм нелокального шумоподавления усреднением из библиотеки OpenCV, так как он визуально показывает наилучшие результаты подавления шумов на изображении. Входные данные и веса моделей из данных экспериментов можно скачать по соответствующим ссылкам в описании репозитория, ссылка на который приведена в приложении к данной работе.
+To test the quality of noise reduction, the PSNR (Peak Signal-to-Noise Ratio) metric is usually used. But this metric is incorrect for a datasets where there is no clean samples. For example, calculated the values of PSNR for quality estimation of output of the denoising mobile architecture (see Fig.~\ref{fig:real_noise_mobile} ) and of output of the architecture with frequency decomposition of input signal (see Fig.~\ref{fig:real_noise_advanced}). PSNR between output of the mobile architecture and average series value is $37.38$, and PSNR between output of the architecture with signal frequency decomposition and the average series value is $40.63$. The value of PSNR for mobile architecture is less than for architecture with frequency signal decomposition, but a visual comparison shows that it copes with the denoising problem worse. This is due to the fact that a noise component remains in the average value of the series.
 
-Для тестирования производительности подходов используется следующий CPU: \textit{Intel i9 10920X}.
+For comparison, taken an unsupervised image denoising algorithm from the OpenCV library: Non-local means denoising. Additional examples of denoising networks results are shown (see Fig.~\ref{fig:real_noise_mobile_2}), (see Fig.~\ref{fig:real_noise_advanced_2}).
 
-\begin{figure}4
+These models work only with frames received from the CMOS sensor from which the dataset was obtained for their training. An example of work on frames from another sensor is shown (see Fig.~\ref{fig:real_noise_webacam_advanced}). Visually seen the poor quality of the denoising result.
+
+\begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/real_noise_mobile}
-	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы мобильной архитектуры, результат работы подхода нелокального шумоподавления усреднением}
+	\includegraphics[scale=0.15]{img/real_noise_mobile}
+	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the mobile architecture, result of the non-local means denoising}
 	\label{fig:real_noise_mobile}
 \end{figure}
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/real_noise_mobile_2}
-	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы мобильной архитектуры, результат работы подхода нелокального шумоподавления усреднением}
+	\includegraphics[scale=0.25]{img/real_noise_mobile_2}
+	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the mobile architecture, result of the non-local means denoising}
 	\label{fig:real_noise_mobile_2}
 \end{figure}
 
-Из примеров, изображенных на рисунках~\ref{fig:real_noise_mobile} и~\ref{fig:real_noise_mobile_2} можно увидеть, что мобильная архитектура полностью не удаляет компоненту шума на входном изображении, но при этом сеть не портит входной сигнал по сравнению с подходом Non-Local Means Denoising, где сглаживается часть изображения. Также не оптимизированная версия сети на CPU обрабатывает данные примеры в среднем за $0.95$ секунды, а Non-Local Means Denoising за  $1.05$.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/real_noise_webacam_mobile}
-	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы мобильной архитектуры}
-	\label{fig:real_noise_webacam_mobile}
-\end{figure}
-
-Анализируя результаты, полученные сетью с частотной декомпозицией входного изображени, изображенные на рисунках~\ref{fig:real_noise_advanced} и~\ref{fig:real_noise_advanced_2}, можно увидеть, что они содержат меньше шума, чем усредненное изображение по серии кадров. Результата, при котором результирующее изображение имеет лучшее характеристики, чем требуемое в качестве предсказания от сети, получилось достичь за счет использования подхода для обучения, предлагаемого авторами работы Noise2Noise: Learning Image Restoration without Clean Data, с рядом улучшений. Подход нелокального шумоподавления усреднением относительно предсказания нейронной сети, имеет те же недостатки, что и в тестах архитектуры из предыдущего пункта~\ref{sec:mobile_net_test}. Среднее время обработки тестируемых примеров данной архитектурой на CPU составляет $9.49$ секунд.
-
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\textwidth]{img/real_noise_advanced}
-	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы архитектуры с частотной декомпозицией входного изображения, результат работы подхода нелокального шумоподавления усреднением}
+	\includegraphics[scale=0.15]{img/real_noise_advanced}
+	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the architecture with frequency decomposition of input signal, result of the non-local means denoising}
 	\label{fig:real_noise_advanced}
 \end{figure}
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/real_noise_advanced_2}
-	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы архитектуры с частотной декомпозицией входного изображения, результат работы подхода нелокального шумоподавления усреднением}
+	\includegraphics[scale=0.25]{img/real_noise_advanced_2}
+	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the architecture with frequency decomposition of input signal, result of the non-local means denoising}
 	\label{fig:real_noise_advanced_2}
 \end{figure}
 
 
-Если применять данную сеть к изображениям, полученным другим сенсором камеры, то глубокая архитектура с частотной декомпозицией сигнала работает на порядок лучше мобильной архитектуры. Но при этом получаемый результат всё ещё не является удовлетворительным. Результат работы данной архитектуры на изображении, полученного с помощью сенсора вебкамеры приведен на изображении~\ref{fig:real_noise_webacam_advanced}.
-
-Для улучшения качества предсказания на различных устройствах можно смешивать обучающие выборки, полученные с разных сенсоров, но при этом ухудшится качество предсказания сети. Это связано с тем, что при обучении на кадрах с одного устройства, сеть способна выделять признаки, присущие конкретному сенсору, и лучше применять их для предсказания чистого сигнала.
-
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/real_noise_webacam_advanced}
-	\caption{Слева на право: оригинальное изображение, изображение, полученное усреднением всех кадров серии, результат работы архитектуры с частотной декомпозицией входного изображения}
+	\includegraphics[scale=0.25]{img/real_noise_webacam_advanced}
+	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the mobile architecture, result of the non-local means denoising}
 	\label{fig:real_noise_webacam_advanced}
 \end{figure}
 
 \section{Summary}
+In the result implemented pipeline for training denoising models on datasets which has not contains clear images samples.
+Have also been developed and tested architectures to effectively solve the noise reduction problem without clean data. 
 
-Результатом работы является реализация подхода для обучения шумоподавляющих сетей на выборках, без наличия данных, не содержащих компоненты шума. Также в рамках работы были разработаны и реализованы две архитектуры шумоподавляющей сети, обученные с помощью реализованного подхода. Первая архитектура ориентирована на использование в малопроизводительных системах, таких как мобильные устройства или для работы в режиме реального времени на высокопроизводительных системах. Вторая архитектура имеет значительно большую вычислительную сложность в сравнении с первой, но решает задачу шумоподавления более эффективно. Также для улучшения качества предсказания сетей был использован подход усреднения результатов предсказания на аугментациях входного изображения обратимыми операциями.
-
-По визуальной оценке обученные архитектуры нейронных сетей достаточно эффективно решают поставленную задачу оптимизации~(\ref{eq:main_min_task}) на собранных для данной работы коллекции данных.
+According to visual estimation, trained denoising neural network architectures solve the set optimization problem~(\ref{eq:main_min_task}) quite effectively on the data collections collected for this work.
 
 
 % \noindent Displayed equations are centered and set on a separate
-l% ine.
+% line.
 % \begin{equation}
 % x + y = z
 % \end{equation}
