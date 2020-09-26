@@ -216,10 +216,10 @@ Denoising model was trained on random cropped images and using the following aug
 For denoising models training was implemented pipeline based on PyTorch framework. As optimizer for was models training used radam optimizer~\cite{radam_paper}.
 
 \section{Inference}
-On inference input image unfolds on grid of crop. Network forwards on each crop with test-time data augmentation with transforms from training~\cite{test_ts_augmentations_paper}. Result image computed by formula~(\ref{eq:times_series_augmentation}), where $T_{i}$ - augmentation transform, $T_{i}^{-1}$ - inverse transform.
+On inference input image unfolds on grid of crop. Network forwards on each crop with test-time data augmentation with transforms from training~\cite{test_ts_augmentations_paper}. Result image computed by formula~(\ref{eq:times_series_augmentation}), where $T_{i}$ - augmentation transform, $T_{i}^{-1}$ - inverse transform for correspondent transform $T_{i}$.
 
 \begin{eqnarray}\label{eq:times_series_augmentation}
-I_{result}\ =\ \frac{\sum_{n=1}^{8} T_{i}^{-1}(T_{i}(f(x)))}{8}
+I_{result}\ =\ \frac{\sum_{n=1}^{8} T_{i}^{-1}(f(T_{i}(x)))}{8}
 \end{eqnarray}
 
 
@@ -258,7 +258,7 @@ These models work only with frames received from the CMOS sensor from which the 
 
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.2]{img/real_noise_advanced}
+	\includegraphics[scale=0.18]{img/real_noise_advanced}
 	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the architecture with frequency decomposition of input signal, result of the non-local means denoising}
 	\label{fig:real_noise_advanced}
 \end{figure}
@@ -275,7 +275,7 @@ These models work only with frames received from the CMOS sensor from which the 
 As a result pipeline was implemented for training the noise reduction model. It does not depend on datasets with clean sample images.
 A neural network architecture was implemented and tested to effectively solve the noise reduction problem without clean data.
 
-According to the visual results, the proposed model solves the optimization problem~(\ref{eq:main_min_task}) quite efficiently. All experiments were performed on the dataset collected for this work.
+According to the results, proposed model solves the optimization problem~(\ref{eq:main_min_task}) quite efficiently. All experiments were performed on the dataset collected for this work.
 
 The source code is available at the following link:
 
