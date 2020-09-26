@@ -3,7 +3,6 @@
 % Version 2.20 of 2017/10/04
 %
 \documentclass[runningheads]{llncs}
-\usepackage[russian]{babel}%
 \usepackage{mathtools}
 
 \usepackage{graphicx}
@@ -23,15 +22,15 @@
 % an abbreviated paper title here
 %
 \author{Alexey Kovalenko\inst{1}\orcidID{0000-0003-4185-3491} \and
-Yana Demyanenko\inst{1}\orcidID{1111-2222-3333-4444}}
+Yana Demyanenko\inst{1}\orcidID{0000-0002-0567-7614}}
 %
 \authorrunning{A. Kovalenko \and Y. Demyanenko}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{Southern Federal University, 	Rostov-on-Don, Russia
-\email{sfedu email}\\
-\url{https://www.sfedu.ru}}
+\institute{Southern Federal University
+\email{gor@sfedu.ru}\\
+\url{https://www.sfedu.ru/}}
 %
 \maketitle              % typeset the header of the contribution
 %
@@ -52,7 +51,7 @@ Noise reduction is common problem in computer vision. Any image captured by CMOS
 
 Since the error in receiving optical signal depends on physical device of the CMOS sensor, that for each model of the sensor there will be a unique distribution of $\mathit{P}$, which generates the noise component of the signal.
 
-The goal of this work is approximation of the function $\phi: \mathit{R}^n \longrightarrow  \mathit{R}^n$ by neural netwok, which has the following property:
+The goal of this work is approximation of the function $\phi: \mathit{R}^n \longrightarrow  \mathit{R}^n$ by neural network, which has the following property:
 
 \begin{equation}\label{eq:main_property}
 \forall \tilde{I} \Longrightarrow \phi(\tilde{I}) = I 
@@ -65,19 +64,24 @@ where $\mathnormal{w}$ - neural network weights $f$, $L_2$ - Euclidean norm.
 
 
 \section{Related works}
-Significant contribution to the denoising problem by neural networks is made by the work of Nvidia researchers. This work is titled Noise2 Noise: Learning Image Restoration without Clean Data. The main idea of this work is using representation of noise as a composition of a clear signal and unique noise received at different points in time to train a neural network to restore a clean image signal. A noisy image with the noise component $\alpha_1$ is forward to neural network and the network is required to predict the same image, but with the noise component $\alpha_2$. Assuming that the noise was obtained randomly, the neural network is not able to predict it, and therefore, during training, the neural network seeks to reconstruct the image with some losses. The disadvantage of this approach is the use of only a pair of images of one scene during training, which can result in large losses of the useful signal during network operation.
+Significant contribution to the denoising problem by neural networks is made by the work of Nvidia researchers. This work is titled Noise2 Noise: Learning Image Restoration without Clean Data~\cite{noise2noise_paper}. The main idea of this work is using representation of noise as a composition of a clear signal and unique noise received at different points in time to train a neural network to restore a clean image signal. A noisy image with the noise component $\alpha_1$ is forward to neural network and the network is required to predict the same image, but with the noise component $\alpha_2$. Assuming that the noise was obtained randomly, the neural network is not able to predict it, and therefore, during training, the neural network seeks to reconstruct the image with some losses. The disadvantage of this approach is the use of only a pair of images of one scene during training, which can result in large losses of the useful signal during network operation.
 
-There is also a lot of researches touch upon problem of training noise reduction networks on datasets containing images without a noise component. An example of this approach is the work of engineers from Google which titled Unprocessing Images for Learned Raw Denoising. In this work, the authors will train the network using the standard error function $L_1$. And tested this network on a Darmstadt Noise Dataset dataset.
+There is also a lot of researches touch upon problem of training noise reduction networks on datasets containing images without a noise component. An example of this approach is the work of engineers from Google which titled Unprocessing Images for Learned Raw Denoising~\cite{google_paper}. In this work, the authors will train the network using the standard error function $L_1$. And tested this network on a Darmstadt Noise Dataset dataset~\cite{raw_dataset}.
 
 Darmstadt Noise Dataset datasets contains pairs of images. Each pair consists of an image taken with correctly selected camera parameters for shooting and an image having noises arising from incorrect parameters. Networks trained on such data sets do not solve the problem of suppressing noise arising from the CMOS sensor of a camera even in the most correctly selected shooting parameters.
 
 Thus, for training a network focused on denoising from a specific CMOS sensor, it becomes necessary to collect data and develop a method for training a network on them.
 
+Together with Noise2Noise work~\cite{noise2noise_paper}, there are state-of-the-art approaches such as Noise2Void~\cite{noise2void_paper}, Noise2Self~\cite{noise2self_paper} and Deep Image Prior~\cite{deep_image_prior_paper}, contributing to the field of unsupervised learning of denoising neural networks.
+
+% Помимо N2N существуют различные современные методы, такие как N2V, N2S, Deep Image prior, вносящие вклад в область неконтрролируемого одбучения шумоподавляющих нейнронных сетей.
+
 \section{Dataset}
+\label{sec:dataset}
 
 \subsection{Collecting dataset}
 
-Images for training dataset were obtained using a certain device, \textit{Apple iPhone X}, which has a camera consisting of two sensors, with the characteristics given in the following source (source).
+Images for training dataset were obtained using a certain device, \textit{Apple iPhone X}, which has a camera consisting of two sensors, with the characteristics given in the following source~\cite{camera_chars}.
 
 From this device a series of RAW images of seven scenes with different lighting and color component ware obtained. A scene made by shooting an static picture of the real world, getting the matrix~(\ref{eq:matrix_def}). To do this, the device was fixed on a tripod in a stationary state and the shooting process was started from a wireless device, thereby obtaining a set of images $\{\tilde{I}^q_k\}_{k=1}^{N}$, where $q$ is the sequence number of the scene being shot. For each series ISO, focus and color temperature values were fixed when shooting.
 
@@ -109,7 +113,7 @@ Then, using the values of the sample $e^q$~(\ref{eq:series_distribution}), we pl
 \mu^q = \mu(e^q),\ \sigma^q = \sigma(e^q)
 \end{eqnarray}
 
-Thus, the mathematical expectation of $\mu^q$~(\ref {eq:mean_and_std}) shows how near the average image of $\hat{I}^q$~(\ref{eq:mean_image}  to the image theoretically obtained from a pure signal $I^q$~(\ref{eq:collection}): 
+Thus, the mathematical expectation of $\mu^q$~(\ref {eq:mean_and_std}) shows how near the average image of $\hat{I}^q$~(\ref{eq:mean_image}  to the image theoretically obtained from a pure signal $I^q$: 
 \begin{eqnarray}\label{eq:mean_image_approximation}
 \hat{I}^q \xrightarrow[\mu^q \rightarrow 0]{} I^q
 \end{eqnarray}
@@ -139,11 +143,34 @@ For demonstrate the various values of the deviation parameter, a graph is constr
 When choosing data for training neural networks, the condition is set that the parameter $\sigma$~(\ref{eq:mean_and_std}) should not exceed the value of $0.007$.
 
 
-\section{Architectures}
+\section{Method}
+\label{sec:method}
+
+In this work we produce a novel method for training denoising neural network architectures. This approach combine traditional supervised method for training autoencoder neural network architectures and approach produced by authors of Noise2Noise work~\cite{noise2noise_paper}.
+
+When we have image series of one scene obtained in different time~(see Section~\ref{sec:dataset}), we can average this image series and made approximation of expected clear image. Obtained mean image can be used for train the denoising neural network as the expected output signal $y^\prime$ in solving of loss $E$ minimization problem~(\ref{eq:loss_optim}). An input signal $x$ can be taken random image from series under consideration. But in this case value $y^\prime$ consists noise component from input signal $x$. If input image has been excluded from series before averaging step, then we made approximation of clear image without noise component of input signal and this setting is consistent with theory of Noise2Noise work~\cite{noise2noise_paper}. This ground truth signal $y^\prime$ are constructed using the formula~(\ref{eq:dataset}). Thereby, when we train denoising network to predict signal $y^\prime$, it train to extract additional features from input signal by Noise2Noise approach logic for achieving more denoising quality.
+Scheme of this approach also is shown~(see Fig.~\ref{fig:denoising_training}).
+
+\begin{equation}\label{eq:dataset}
+X_i = \tilde{I_i},\ y = \frac{\sum_{k=1, k \ne i}^{N}\tilde{I_k}}{N - 1}
+\end{equation}
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.14]{img/denoising_training}
+	\caption{Scheme of training pipeline}
+	\label{fig:denoising_training}
+\end{figure}
+
+\begin{eqnarray}\label{eq:loss_optim}
+\min_{\mathnormal{w}} E(f(x), y^\prime)
+\end{eqnarray}
+
+\section{Architecture}
 
 \subsection{Base architecture block}
 
-To build architectures in this work, the blocks from the ResNet architecture were taken and modified. The scheme of these blocks is shown(see Fig.~\ref{fig:detail_adjuster_resnet_block}).
+To build architectures in this work for test proposed approach, the blocks from the ResNet~\cite{resnet_paper} architecture were taken and modified. From ResNet blocks batch normalization layers has been excluded. The scheme of these blocks is shown(see Fig.~\ref{fig:detail_adjuster_resnet_block}).
 
 \begin{figure}
 	\centering
@@ -152,18 +179,9 @@ To build architectures in this work, the blocks from the ResNet architecture wer
 	\label{fig:detail_adjuster_resnet_block}
 \end{figure}
 
-\subsection{Mobile architecture}
-
-Based on the blocks (see Fig.~\ref{fig:detail_adjuster_resnet_block}), an architecture is constructed that has a small number of trained parameters and a high speed of operation (see Fig.~\ref{fig:simple_net_architecture}).
-
-\begin{figure}
-	\centering
-	\includegraphics[scale=0.07]{img/simple_net_architecture}
-	\caption{Scheme of mobile denoising architecture} 
-	\label{fig:simple_net_architecture}
-\end{figure}
 
 \subsection{Architecture with frequency components splitting}
+\label{sec:architecture}
 
 The noise in question~(\ref{eq:matrix_def}) belongs to the high frequency component of the image signal. An example of decomposition of an image signal into high and low frequencies using the Butterworth filter is shown(see Fig.~\ref {fig:fft_comparison}).
 
@@ -189,18 +207,16 @@ This architecture has $511390$ of trainable parameters and the weight of this mo
 
 \section{Training}
 
+In the experiment we train architecture with frequency components splitting~(see Section~\ref{sec:architecture}) by proposal approach~(see Section~\ref{sec:method}) on our dataset~(see Section~\ref{sec:dataset}).
 
-To use all frames from a series of images, one frame from a series was use to the network input, and a series averaging without an input frame was used as the expected output signal. Based on the sample \\$\{\tilde{I} _k\} _ {k=1}^{N}$, the input $X$ and the expected at the output of the network $y$ are constructed using the following formula:
-\begin{equation}\label{eq:dataset}
-X_i = \tilde{I_i},\ y = \frac{\sum_{k=1, k \ne i}^{N}\tilde{I_k}}{N - 1}
-\end{equation}
+To use all frames from a series of images, one frame from a series was use to the network input, and a series averaging without an input frame was used as the expected output signal~(see Section~\ref{sec:method}). Based on the sample \\$\{\tilde{I} _k\} _ {k=1}^{N}$, the input $X$ and the expected at the output of the network $y$ are constructed using the formula~(~\ref{eq:dataset}).
 
 Denoising model was trained on random cropped images and using the following augmentation: rotations by 90, 180, 270 degrees and flips.
 
-For denoising models training was implemented pipeline based on PyTorch framework. As optimizer for was models training used radam optimizer (link to paper).
+For denoising models training was implemented pipeline based on PyTorch framework. As optimizer for was models training used radam optimizer~\cite{radam_paper}.
 
 \section{Inference}
-On inference input image unfolds on grid of crop. Network forwards on each crop with test-time data augmentation with transforms from training (link to paper). Result image computed by formula~(\ref{eq:times_series_augmentation}), where $T_{i}$ - augmentation transform, а $T_{i}^{-1}$ - inverse transform.
+On inference input image unfolds on grid of crop. Network forwards on each crop with test-time data augmentation with transforms from training~\cite{test_ts_augmentations_paper}. Result image computed by formula~(\ref{eq:times_series_augmentation}), where $T_{i}$ - augmentation transform, $T_{i}^{-1}$ - inverse transform.
 
 \begin{eqnarray}\label{eq:times_series_augmentation}
 I_{result}\ =\ \frac{\sum_{n=1}^{8} T_{i}^{-1}(T_{i}(f(x)))}{8}
@@ -208,73 +224,64 @@ I_{result}\ =\ \frac{\sum_{n=1}^{8} T_{i}^{-1}(T_{i}(f(x)))}{8}
 
 
 \section{Results}
-To test the quality of noise reduction, the PSNR (Peak Signal-to-Noise Ratio) metric is usually used. But this metric is incorrect for a datasets where there is no clean samples. For example, calculated the values of PSNR for quality estimation of output of the denoising mobile architecture (see Fig.~\ref{fig:real_noise_mobile} ) and of output of the architecture with frequency decomposition of input signal (see Fig.~\ref{fig:real_noise_advanced}). PSNR between output of the mobile architecture and average series value is $37.38$, and PSNR between output of the architecture with signal frequency decomposition and the average series value is $40.63$. The value of PSNR for mobile architecture is less than for architecture with frequency signal decomposition, but a visual comparison shows that it copes with the denoising problem worse. This is due to the fact that a noise component remains in the average value of the series.
+To test the quality of noise reduction, the PSNR (Peak Signal-to-Noise Ratio) metric is usually used. But this metric is incorrect for a datasets where there is no clean samples. PSNR between output of the architecture which not completely reduced noise and average series value can be more then PSNR between output of the architecture which completely reduce noise component and the average series. This is due to the fact that a noise component remains in the average value of the series. In this case PSNR measure incorrect, but we have not another way to comparison our solution with state-of-the-art denoising approaches.
 
-For comparison, taken an unsupervised image denoising algorithm from the OpenCV library: Non-local means denoising. Additional examples of denoising networks results are shown (see Fig.~\ref{fig:real_noise_mobile_2}), (see Fig.~\ref{fig:real_noise_advanced_2}).
+We compare our method with state-of-the-art approaches for training unsupervised image denoising neural networks . Before comparison neural network of each work we train by authors pipeline on our dataset. In addition for comparison taken an unsupervised image denoising algorithm from the OpenCV library: Non-local means denoising~\cite{nlmd_paper}. Table~\ref{tab:comparison} gives comparison results. Furthermore visual comparison of inference all approaches is shown~(see Fig.~\ref{fig:approaches_comparison}). Additional shown comparison with Non-local means denoising~\cite{nlmd_paper}~(see Fig.~\ref{fig:real_noise_advanced}).
 
-These models work only with frames received from the CMOS sensor from which the dataset was obtained for their training. An example of work on frames from another sensor is shown (see Fig.~\ref{fig:real_noise_webacam_advanced}). Visually seen the poor quality of the denoising result.
+\begin{table}
+\centering
+\caption{Comparison proposal approach with related works}\label{tab:comparison}	
+\begin{tabular}{|l|l|}	
+	\hline	
+	Approach &  PSNR \\	
+	\hline	
+	Noise2Noise &  {34.6} \\	
+	Noise2Void &  {30.53} \\	
+	Noise2Self & {33.7} \\
+	Non-local Means Denoising\hspace{1cm} & {36.04} \\
+	Deep Image Prior & {36.34} \\
+	Our & {\bfseries 37.1} \\	
+	\hline	
+\end{tabular}	
+\end{table}
+
 
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.15]{img/real_noise_mobile}
-	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the mobile architecture, result of the non-local means denoising}
-	\label{fig:real_noise_mobile}
+	\includegraphics[scale=0.1]{img/approaches_comparison}
+	\caption{From left to right on first line: image obtained by averaging all frames in series, original image, result of Noise2Noise, result of Noise2Self, from left to right of second line: result of Noise2Void, result of the non-local means denoising, result of Deep Image Prior, result of the architecture with frequency decomposition of input signal}
+	\label{fig:approaches_comparison}
 \end{figure}
 
-\begin{figure}
-	\centering
-	\includegraphics[scale=0.25]{img/real_noise_mobile_2}
-	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the mobile architecture, result of the non-local means denoising}
-	\label{fig:real_noise_mobile_2}
-\end{figure}
+These models work only with frames received from the CMOS sensor from which the dataset was obtained for their training. An example of work on frames from another sensor is shown (see Fig.~\ref{fig:real_noise_webacam_advanced}). Poor prediction quality is noticeably.
 
 
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.15]{img/real_noise_advanced}
+	\includegraphics[scale=0.2]{img/real_noise_advanced}
 	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the architecture with frequency decomposition of input signal, result of the non-local means denoising}
 	\label{fig:real_noise_advanced}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[scale=0.25]{img/real_noise_advanced_2}
-	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the architecture with frequency decomposition of input signal, result of the non-local means denoising}
-	\label{fig:real_noise_advanced_2}
 \end{figure}
 
 
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.25]{img/real_noise_webacam_advanced}
-	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the mobile architecture, result of the non-local means denoising}
+	\caption{From left to right: original image, image obtained by averaging all frames in series, result of the architecture with frequency decomposition of input signal,, result of the non-local means denoising}
 	\label{fig:real_noise_webacam_advanced}
 \end{figure}
 
 \section{Summary}
-In the result implemented pipeline for training denoising models on datasets which has not contains clear images samples.
-Have also been developed and tested architectures to effectively solve the noise reduction problem without clean data. 
+As a result pipeline was implemented for training the noise reduction model. It does not depend on datasets with clean sample images.
+A neural network architecture was implemented and tested to effectively solve the noise reduction problem without clean data.
 
-According to visual estimation, trained denoising neural network architectures solve the set optimization problem~(\ref{eq:main_min_task}) quite effectively on the data collections collected for this work.
+According to the visual results, the proposed model solves the optimization problem~(\ref{eq:main_min_task}) quite efficiently. All experiments were performed on the dataset collected for this work.
+
+The source code is available at the following link:
+
+\textbf{https://github.com/AlexeySrus/image\_denoising}
 
 
-% \noindent Displayed equations are centered and set on a separate
-% line.
-% \begin{equation}
-% x + y = z
-% \end{equation}
-% Please try to avoid rasterized images for line-art diagrams and
-% schemas. Whenever possible, use vector graphics instead (see
-% Fig.~\ref{fig1}).
-
-% \begin{figure}
-% \includegraphics[width=\textwidth]{fig1.eps}
-% \caption{A figure caption is always placed below the illustration.
-% Please note that short captions are centered, while long ones are
-% justified by the macro package automatically.} \label{fig1}
-% \end{figure}
-
-%
 % ---- Bibliography ----
 %
 % BibTeX users should specify bibliography style 'splncs04'.
@@ -284,25 +291,38 @@ According to visual estimation, trained denoising neural network architectures s
 % \bibliography{mybibliography}
 %
 \begin{thebibliography}{8}
-\bibitem{ref_article1}
-Author, F.: Article title. Journal \textbf{2}(5), 99--110 (2016)
+\bibitem{noise2noise_paper}
+Lehtinen, J., Munkberg, J., Laine, S., Karras, T., Aittala, M., Aila, T.: Noise2Noise: Learning Image Restoration without Clean Data. CoRR abs/1803.04189, (2018). http://arxiv.org/abs/1803.04189
+	
+\bibitem{google_paper}
+Brooks, T., Mildenhall, B., Xue, T., Chen, J., Sharlet, D., Barron, J.: Unprocessing Images for Learned Raw Denoising. CoRR abs/1811.11127, (2018). http://arxiv.org/abs/1811.11127
 
-\bibitem{ref_lncs1}
-Author, F., Author, S.: Title of a proceedings paper. In: Editor,
-F., Editor, S. (eds.) CONFERENCE 2016, LNCS, vol. 9999, pp. 1--13.
-Springer, Heidelberg (2016). \doi{10.10007/1234567890}
+\bibitem{raw_dataset}
+Plotz, T., Roth, S.: Benchmarking Denoising Algorithms with Real Photographs. CoRR abs/1707.0131, (2017). http://arxiv.org/abs/1707.01313
 
-\bibitem{ref_book1}
-Author, F., Author, S., Author, T.: Book title. 2nd edn. Publisher,
-Location (1999)
+\bibitem{noise2void_paper}
+Krull, A., Buchholz, T.-O., Jug, F.: Noise2Void - Learning Denoising from Single Noisy Images. CoRR abs/1811.10980, (2018). http://arxiv.org/abs/1811.10980
 
-\bibitem{ref_proc1}
-Author, A.-B.: Contribution title. In: 9th International Proceedings
-on Proceedings, pp. 1--2. Publisher, Location (2010)
+\bibitem{noise2self_paper}
+Batson, J., Royer, L.: Noise2Self: Blind Denoising by Self-Supervision. CoRR abs/1901.11365, (2019). https://arxiv.org/abs/1901.11365
 
-\bibitem{ref_url1}
-LNCS Homepage, \url{http://www.springer.com/lncs}. Last accessed 4
-Oct 2017
+\bibitem{deep_image_prior_paper}
+Ulyanov, D., Vedaldi, A., Lempitsky, V.: Deep Image Prior. CoRR abs/1711.10925, (2017). https://arxiv.org/abs/1711.10925
+
+\bibitem{camera_chars}
+GSMARENA, https://www.gsmarena.com/apple\_iphone\_x-8858.php.  Last accessed 20 Jun 2020
+
+\bibitem{resnet_paper}
+He, K., Zhang, X., Ren, S., Sun, J.: Deep Residual Learning for Image Recognition. CoRR abs/1512.03385, (2015). http://arxiv.org/abs/1512.03385
+
+\bibitem{radam_paper}
+Liyuan, L., Haoming, J., Pengcng, H., Weizhu, C., Xiaodong, L., Jianfeng, G., Jiawei, H.: On the Variance of the Adaptive Learning Rate and Beyond. CoRR abs/1908.03265, (2019). http://arxiv.org/abs/1908.03265
+
+\bibitem{test_ts_augmentations_paper}
+Ayhan, M., Berens, P.: Test-time Data Augmentation for Estimation of Heteroscedastic Aleatoric Uncertainty in Deep Neural Networks. MIDL 2018 Conference, (2018). https://openreview.net/forum?id=rJZz-knjz
+
+\bibitem{nlmd_paper}
+Buades, A., Coll, B., Morel, J.-M.: Median Filtering: A New Insight. Image Processing On Line, (2011). http://dx.doi.org/10.5201/ipol.2011.bcm\_nlm
 \end{thebibliography}
 \end{document}
 
